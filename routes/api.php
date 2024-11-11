@@ -10,3 +10,9 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/v1/add-setting',[SettingController::class,'store_setting'])->name('setting.store');
+// Route::get('/v1/get-settings',[SettingController::class,'get_settings'])->name('setting.getsettings');
+Route::get('/v1/{name}/get-settings', [SettingController::class, 'get_settings'])->name('setting.getsettings');
+Route::post('/v1/delete-setting', [SettingController::class, 'delete_setting'])->name('setting.delete');
+
+
+

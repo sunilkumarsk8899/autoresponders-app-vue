@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Foundation\Application;
@@ -24,9 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/settings',[SettingController::class,'index'])->name('settings.index');
-    Route::get('/settings/getresponse',[SettingController::class,'getresponse'])->name('settings.getresponse');
     Route::get('/settings/clickbank',[SettingController::class,'clickbank'])->name('settings.clickbank');
     Route::get('/settings/active-campaign',[SettingController::class,'activecampaign'])->name('settings.activecampaign');
+    Route::get('/campaign/add',[CampaignController::class,'add_campaign'])->name('campaign.add');
 });
 
 require __DIR__.'/auth.php';
