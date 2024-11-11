@@ -61,13 +61,29 @@ class SettingController extends Controller
             // Validate the request data
             $validatedData = $request->validate([
                 'clickbank_captain_key' => 'required',
-                'clickbank_apiurl' => 'required|url'
+                'clickbank_apiurl' => 'required'
             ]);
         }
 
-        // $setting = Setting::create($validatedData);
+        // Create a new combined array
+        $combinedArray = [];
+        foreach ($request->clickbank_apiurl as $index => $apiurl) {
+            if (isset($request->clickbank_captain_key[$index])) {
+                $combinedArray[] = ['url' => $apiurl, 'key' => $request->clickbank_captain_key[$index]];
+            }
+        }
+
+        foreach($combinedArray as $dets){
+            $insertData = [
+                'name' => $request->input('type'),
+                'info' => serialize($dets),
+            ];
+            Setting::create($insertData);
+        }
+
         return response()->json([
-            'data' => $request->all()
+            'data' => $request->all(),
+            'combine_arr' => $combinedArray
         ]);
     }
 }
