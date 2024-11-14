@@ -59,6 +59,17 @@ function isActive(routeNames) {
                                     Settings
                                 </NavLink>
                             </div>
+
+                            <div
+                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
+                            >
+                                <NavLink
+                                    :href="route('campaign.add')"
+                                    :active="isActive(['campaign.add', 'settings.getresponse', 'settings.clickbank'])"
+                                >
+                                    Campaign Add
+                                </NavLink>
+                            </div>
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">

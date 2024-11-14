@@ -1,73 +1,9 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
-
-import { useToast } from 'vue-toast-notification';
-import 'vue-toast-notification/dist/theme-sugar.css'; // You can change the theme as needed
-
-const props = defineProps({
-    user: Object,
+<script>
+export default {
+  props: {
     settings: Object
-});
-
-/** get current logged in user data */
-const user = usePage().props.auth.user;
-const { id } = user;
-const UserID = id;
-
-/** add campaing form data */
-const AddCampaignFromData = ref({
-    'name' : '',
-    'desc' : '',
-    'user_id' : UserID
-});
-
-// errors
-const errors = ref({
-    'name' : '',
-    'desc' : ''
-});
-
-
-// Use the toast plugin
-const toast = useToast();
-const showToast = (type='success',msg) => {
-    // Show a toast notification
-    toast.open({
-        message: msg,
-        type: type, // You can use other types like info, error, warning
-        duration: 3000,  // Auto-hide after 3 seconds
-        position: 'top-right', // Toast position
-    });
+  }
 };
-
-
-
-const addCampaign = async () => {
-    console.log(AddCampaignFromData.value);
-    errors.value = {};
-    try {
-        const resp = await axios.post('/api/v1/store-campaign', AddCampaignFromData.value, {
-            headers: {
-                'Content-Type': 'application/json', // Adjust if sending other formats like `multipart/form-data`
-            }
-        });
-        console.log(resp);
-        if(resp.data.resp.id){
-            showToast('success',resp.data.message);
-        }else{
-            showToast('error',"Somtheing wen't wrong!");
-        }
-    } catch (error) {
-        // console.error(error.response.data.errors);
-        errors.value.name = error.response.data.errors?.name ? error.response.data.errors.name[0] : '';
-        errors.value.desc = error.response.data.errors?.desc ? error.response.data.errors.desc[0] : '';
-    }
-
-}
-
-
 </script>
 
 <template>

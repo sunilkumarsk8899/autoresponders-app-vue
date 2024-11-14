@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings/clickbank',[SettingController::class,'clickbank'])->name('settings.clickbank');
     Route::get('/settings/active-campaign',[SettingController::class,'activecampaign'])->name('settings.activecampaign');
     Route::get('/campaign/add',[CampaignController::class,'add_campaign'])->name('campaign.add');
+    Route::get('/campaign/edit',[CampaignController::class,'edit_campaign'])->name('campaign.edit');
 });
 
 require __DIR__.'/auth.php';
