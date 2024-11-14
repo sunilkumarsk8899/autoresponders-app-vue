@@ -165,4 +165,26 @@ class SettingController extends Controller
 
 
 
+    /** get clickbank accounts */
+    public function get_account($type){
+        $clickbankaccount = Setting::where('name',$type)->get();
+
+        if(!$clickbankaccount){
+            return response()->json([
+                'error' => 'Clickbank account not found',
+                'resp' => false
+            ]);
+        }
+
+        return response()->json([
+            'data' => $clickbankaccount,
+            'resp' => true
+        ]);
+    }
+
+
+
+
+
+
 }

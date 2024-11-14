@@ -4,6 +4,42 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import ModelBox from '@/Components/ModelBox.vue';
 
+
+
+
+
+import Swal from 'sweetalert2';
+const deleteConfirmation = async () =>{
+    const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'This action will permanently delete the setting!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+        });
+    return result.isConfirmed;
+}
+
+
+
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css'; // You can change the theme as needed
+const toast = useToast();
+const showToast = (type='success',msg) => {
+    // Show a toast notification
+    toast.open({
+        message: msg,
+        type: type, // You can use other types like info, error, warning
+        duration: 3000,  // Auto-hide after 3 seconds
+        position: 'top-right', // Toast position
+    });
+};
+
+
+
+
 /** get campaign data */
 const campaigns = ref([]);
 
@@ -14,7 +50,7 @@ const userid = currentUserData.id;
 
 /** edit */
 
-const setEdeditHandleitData = (id) =>{
+const editHandle = (id) =>{
     console.log(id);
 
 }
@@ -29,6 +65,24 @@ const get_campaigns = async () => {
     const response = await axios.get(`/api/v1/get-campaigns/${userid}`);
     campaigns.value = response.data.campaigns;
 }
+
+
+
+/** delete campaign */
+const deleteHandle = async (id) => {
+    try {
+        const result = await deleteConfirmation();
+        if(result){
+            const response = await axios.delete(`/api/v1/delete-campaign/${id}`);
+            showToast('success',response.data.message);
+            get_campaigns();
+        }
+    } catch (error) {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        showToast('error',error.message);
+    }
+};
+
 </script>
 
 <template>
@@ -88,13 +142,28 @@ const get_campaigns = async () => {
                             <td>{{ item.name }}</td>
                             <td>{{ item.description }}</td>
                             <td class="text-center" >
-                                <button class="btn btn-primary" @click="editHandle(item.id)"> EDIT </button>
+                                <!-- <button class="btn btn-primary" @click="editHandle(item.id)"> EDIT </button> -->
+                                <Link
+                                    :href="route('campaign.edit', { id : item.id })"
+                                    :class="[
+                                        'rounded-md px-3 py-2 text-white ring-1 ring-transparent transition btn btn-secondary'
+                                    ]"
+                                >
+                                    Edit
+                                </Link>
                             </td>
                             <td class="text-center" >
-                                <button class="btn btn-danger">Delete</button>
+                                <button class="btn btn-danger" @click="deleteHandle(item.id)" >Delete</button>
                             </td>
                             <td class="text-center" >
-                                <button class="btn btn-success">Start</button>
+                                <Link
+                                    :href="route('campaign.start', { camid : item.id })"
+                                    :class="[
+                                        'rounded-md px-3 py-2 text-white ring-1 ring-transparent transition btn btn-secondary'
+                                    ]"
+                                >
+                                    Start
+                                </Link>
                             </td>
                         </tr>
                     </tbody>

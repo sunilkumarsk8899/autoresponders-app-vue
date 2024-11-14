@@ -1,0 +1,51 @@
+/* Container for the custom-dropdown */
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Style for the button */
+  .custom-dropdown-btn {
+    background-color: #3498db; /* Blue background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Button padding */
+    border: none;
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer;
+    font-size: 16px; /* Font size */
+  }
+
+  /* Hide custom-dropdown content by default */
+  .custom-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1; /* Light gray background */
+    min-width: 160px; /* Minimum width */
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); /* Shadow */
+    z-index: 1; /* Stack order */
+    border-radius: 4px; /* Rounded corners */
+  }
+
+  /* custom-Dropdown links */
+  .custom-dropdown-content a {
+    color: black; /* Text color */
+    padding: 12px 16px; /* Padding */
+    text-decoration: none; /* No underline */
+    display: block; /* Block display for full width */
+    border-bottom: 1px solid #ddd; /* Separator */
+  }
+
+  /* Change color on hover */
+  .custom-dropdown-content a:hover {
+    background-color: #ddd; /* Light gray on hover */
+  }
+
+  /* Show the custom-dropdown on hover */
+  .custom-dropdown:hover .custom-dropdown-content {
+    display: block;
+  }
+
+  /* Change button color on hover */
+  .custom-dropdown-btn:hover {
+    background-color: #2980b9; /* Darker blue */
+  }
