@@ -6,6 +6,10 @@ import { onMounted, ref, reactive } from 'vue';
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css'; // You can change the theme as needed
 
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+
+
 const props = defineProps({
     user: Object,
     settings: Object
@@ -19,13 +23,23 @@ const UserID = id;
 
 
 /** define variables */
-const clickbankAccounts = ref({});
-const activeCampaignAccounts = ref({});
-const activeCampaignLists = ref({});
-const selectedOptionClickbank = ref('');
+const selectedOptionClickbank = ref(''); /** selected clickbank account */
+const clickbankAccounts = ref({}); /** clickbank account data */
+const is_active_clickbank_account_dropdown = ref(false); /** clickbank account dropdown */
+const is_active_clickbank_product_dropdown = ref(false); /** clickbank product dropdown */
+const clickBankGetAllAccounts = ref({});
 
-const is_active_clickbank_dropdown = ref(false);
-const is_active_campaign_list_dropdown = ref(false);
+const activeCampaignAccounts = ref({}); /** active campaign account data */
+const activeCampaignLists = ref({}); /** active campaign list data */
+const is_active_campaign_list_dropdown = ref(false); /** active campaign list dropdown */
+
+const clickBankApiID = ref('');
+
+/** get data by apis */
+const clickbankAllAccounts = ref('');
+const clickbankAllOrders = ref('');
+
+
 
 
 
@@ -38,17 +52,22 @@ const AddCampaignFromData = ref({
     'desc' : '',
     'user_id' : UserID,
     'clickbank_id' : '',
-    'clickbank_item_id' : '',
-    'clickbank_item_site_name' : '',
+    'clickbank_account_name' : '',
+    'selected_clickbank_products_name' : [],
     'active_campaign_id' : '',
     'active_campaign_list_id' : ''
 });
+
+const selectedClickbankProducts = ref([]);
 
 // errors
 const errors = ref({
     'name' : '',
     'desc' : ''
 });
+
+
+
 
 
 // Use the toast plugin
@@ -70,17 +89,18 @@ const showToast = (type='success',msg) => {
 onMounted(() => {
     getClickbankAccounts();
     getActiveCampaignAccounts();
-    getActiveCampaignLists();
-    getClickBankAllAccounts();
 });
 
 
 
 
 
-
+/** add campaign form submit */
 const addCampaign = async () => {
-    console.log(AddCampaignFromData);
+    const item = selectedClickbankProducts.value.map(order => order.item);
+    AddCampaignFromData.value.selected_clickbank_products_name = item;
+    console.log(AddCampaignFromData.value);
+
     errors.value = {};
     try {
         const resp = await axios.post('/api/v1/store-campaign', AddCampaignFromData.value, {
@@ -106,83 +126,123 @@ const addCampaign = async () => {
 
 
 
-/** get all clickbank accounts */
+/**============================== get all clickbank accounts from db ==============================*/
 const getClickbankAccounts = async () => {
     try {
-        const resp = await axios.get(`/api/v1/get-accounts/clickbank`);
-        // console.log(resp.data.data);
+        const type = 'clickbank';
+        const resp = await axios.get(`/api/v1/get-accounts/${type}`);
         clickbankAccounts.value = resp.data.data;
     } catch (error) {
         console.log(error);
     }
 }
 
-/** get all active campaign accounts */
+/**============================== get all active campaign accounts from db ==============================*/
 const getActiveCampaignAccounts = async () => {
     try {
-        const resp = await axios.get('/api/v1/get-accounts/activecampaign');
-        // console.log(resp.data.data);
+        const type = 'activecampaign';
+        const resp = await axios.get(`/api/v1/get-accounts/${type}`);
         activeCampaignAccounts.value = resp.data.data;
     } catch (error) {
         console.log(error);
     }
 }
+/**============================== get all active campaign accounts from db ==============================*/
 
 
 
-/** get activecampaing lists */
-const getActiveCampaignLists = async () => {
+
+
+
+/**============================== get activecampaing lists if seleted active campaing dropdown start ==============================*/
+const getActiveCampaignLists = async (id) => {
     try {
-        const resp = await axios.get('/api/v1/get-active-campaing/lists');
-        // console.log('active campaing lists data ',resp.data.data.lists);
+        const resp = await axios.get(`/api/v1/get-active-campaing/lists/${id}`);
         activeCampaignLists.value = resp.data.data.lists;
     } catch (error) {
         console.log(error);
     }
-
 }
+/**============================== get activecampaing lists end ==============================*/
 
 
 
-
-const clickBankOptionHandler = (event) =>{
-    is_active_clickbank_dropdown.value = true;
-    AddCampaignFromData.clickbank_id = event.target.value;
-    // console.log('clickbank Target Value:', event.target.value);
-}
-
-
-
-const activeCampaignHandler = (event) => {
-    // console.log('active campaing event');
-
-    is_active_campaign_list_dropdown.value = true;
-    AddCampaignFromData.active_campaign_id = event.target.value;
-    // console.log('active campaign Target Value:', event.target.value);
-
-}
-
-
-const activeCampaignListHandler = (event) =>{
-    AddCampaignFromData.active_campaign_list_id = event.target.value;
-    // console.log('active campaing list id value ',event.target.value);
-
-}
-
-
-
-
-
-
+/**============================== get clickbank all account details start ==============================*/
 const getClickBankAllAccounts = async () => {
     try {
-        let endpoint = 'one';
-        const response = await axios.get(`/api/v1/clickbank/get/${endpoint}/accounts`);
+        let apiID = clickBankApiID.value;
+        const response = await axios.get(`/api/v1/clickbank/get/${apiID}/accounts`);
         console.log(response.data);
+        clickbankAllAccounts.value = response.data.response.accountData;
     } catch (error) {
         console.log(error);
     }
 }
+/**============================== get clickbank all account details end ==============================*/
+
+
+
+/**============================== get clickbank all account details start ==============================*/
+const getClickBankAllOrders = async () => {
+    try {
+        let apiID = clickBankApiID.value;
+        const response = await axios.get(`/api/v1/clickbank/products/${apiID}/orders`);
+        clickbankAllOrders.value = response.data.response.orderData;
+        console.log('order ',response.data.response.orderData);
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+/**============================== get clickbank all account details end ==============================*/
+
+
+
+
+
+
+
+
+
+
+/**============================== click bank get details start ==============================*/
+
+const clickBankOptionHandler = (event) =>{ /** get clickbank list & show next account & product dropdown */
+    is_active_clickbank_account_dropdown.value = true;
+    AddCampaignFromData.value.clickbank_id = event.target.value;
+    clickBankApiID.value = event.target.value;
+    getClickBankAllAccounts();
+}
+
+const clickBankAccountOptionHandler = (event) => { /** clickbank account id get in dropdown */
+    is_active_clickbank_product_dropdown.value = true;
+    AddCampaignFromData.value.clickbank_account_name = event.target.value;
+    getClickBankAllOrders();
+}
+
+/**============================== click bank get details end ==============================*/
+
+
+
+
+/**=========================== get active campaign account details start ===========================*/
+
+const activeCampaignHandler = (event) => { /** get active campaign id and show next active campaign list id dropdown */
+    is_active_campaign_list_dropdown.value = true;
+    const activeCampaignId = event.target.value;
+    AddCampaignFromData.value.active_campaign_id = event.target.value;
+    getActiveCampaignLists(activeCampaignId);
+}
+
+const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
+    AddCampaignFromData.value.active_campaign_list_id = event.target.value;
+}
+
+/**=========================== get active campaign account details end ===========================*/
+
+
+
+
 
 </script>
 
@@ -227,26 +287,55 @@ const getClickBankAllAccounts = async () => {
                             <small id="" class="form-text text-danger" v-if="errors.desc">{{ errors.desc }}</small>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label for="desc">ClickBank</label>
+
+
+
+                        <!--=========================================== click bank details start ===========================================-->
+                        <!-- clickbank api accounts -->
+                        <div class="form-group mb-3" >
+                            <label for="desc">ClickBank API Accounts</label>
                             <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="clickBankOptionHandler" >
-                                <option value="">Select ClickBank Account</option>
+                                <option value="">Select ClickBank API Account</option>
                                 <option v-for="(clickbankitem,index) in clickbankAccounts" :key="index" :value="clickbankitem.id">
                                     {{ clickbankitem.name }}
                                 </option>
                             </select>
                         </div>
 
-                        <div class="form-group mb-3 d-flex align-items-center" v-if="is_active_clickbank_dropdown" >
-                            <label for="item_id" class="w-20" >Item ID</label>
-                            <input type="text" class="form-control w-50" id="item_id" placeholder="Enter item id separated by comma (12,13,55,25,23)" v-model="AddCampaignFromData.clickbank_item_id" />
-                            <label for="site_name" class="w-40 text-center" >Site Name</label>
-                            <input type="text" class="form-control w-50" id="site_name" placeholder="Enter site name" v-model="AddCampaignFromData.clickbank_item_site_name" />
+                        <!-- users accounts -->
+                        <div class="form-group mb-3" v-if="is_active_clickbank_account_dropdown" >
+                            <label for="desc">ClickBank User Accounts</label>
+                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="clickBankAccountOptionHandler" >
+                                <option value="">Select ClickBank User Account</option>
+                                <option v-for="(clickbankAccountItem,index) in clickbankAllAccounts" :key="index" :value="clickbankAccountItem.nickName">
+                                    {{ clickbankAccountItem.nickName }}
+                                </option>
+                            </select>
                         </div>
 
+                        <!-- user products -->
+                        <div class="form-group mb-3" v-if="is_active_clickbank_product_dropdown">
+                            <label for="clickbank-products">ClickBank Products</label>
+                            <Multiselect
+                            v-model="selectedClickbankProducts"
+                            :options="clickbankAllOrders"
+                            :multiple="true"
+                            track-by="item"
+                            label="item"
+                            placeholder="Select ClickBank Products"
+                            class="w-100"
+                            />
+                        </div>
 
+                        <!--=========================================== click bank details end ===========================================-->
+
+
+
+
+                        <!--=========================================== active details start ===========================================-->
+                        <!-- api accounts -->
                         <div class="form-group mb-3">
-                            <label for="desc">Active Campaign</label>
+                            <label for="desc">Active API Campaign</label>
                             <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignHandler" >
                                 <option value="">Select ActiveCampaign Account</option>
                                 <option v-for="(item,index) in activeCampaignAccounts" :key="item.id" :value="item.id" >
@@ -255,6 +344,7 @@ const getClickBankAllAccounts = async () => {
                             </select>
                         </div>
 
+                        <!-- selected api account lists -->
                         <div class="form-group mb-3" v-if="is_active_campaign_list_dropdown" >
                             <label for="desc">Active Campaign Lists</label>
                             <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignListHandler" >
@@ -264,6 +354,10 @@ const getClickBankAllAccounts = async () => {
                                 </option>
                             </select>
                         </div>
+                        <!--=========================================== active details end ===========================================-->
+
+
+
 
                     <button type="submit" class="btn btn-primary">Submit</button>
                     </form>

@@ -31,11 +31,12 @@ class CampaignController extends Controller
 
         $serliData = [
             'clickbank_id' => $request->input('clickbank_id'),
-            'clickbank_item_id' => $request->input('clickbank_item_id'),
-            'clickbank_item_site_name' => $request->input('clickbank_item_site_name'),
+            'clickbank_account_name' => $request->input('clickbank_account_name'),
+            'selected_clickbank_products_name' => implode(",",$request->input('selected_clickbank_products_name')),
             'active_campaign_id' => $request->input('active_campaign_id'),
             'active_campaign_list_id' => $request->input('active_campaign_list_id')
         ];
+
 
         $insertData = [
             'user_id' => $request->input('user_id'),
@@ -136,11 +137,30 @@ class CampaignController extends Controller
 
 
 
+    protected function get_api_data($name,$id){
+        $apiData = Setting::select('info')->where('name',$name)->where('id',$id)->first();
+        $resp = unserialize($apiData->info);
+        if($apiData->count() > 0){
+            return [
+                'key' => $resp['key'],
+                'url' => $resp['url']
+            ];
+        } else {
+            return [ 'resp' => 'Api Records not found!' ];
+        }
+    }
+
+
+
+
     // Function to make API request
-    protected function clickbankApiRequest($endpoint, $params = [], $type) {
+    protected function clickbankApiRequest($endpoint, $params = [], $api_id) {
         $url = 'https://api.clickbank.com/rest/1.3/' . $endpoint . '?' . http_build_query($params);
 
-        if($type == 'one'){
+        $CLICKBANK_CAPTAIN_KEY = $this->get_api_data('clickbank',$api_id)['key'];
+
+
+        /*if($type == 'one'){
             $CLICKBANK_CAPTAIN_KEY =  'API-XEYY0SVZ7D1H2NC2SGL7KH4R2BUKNZS8O2TM';
         }
 
@@ -150,8 +170,7 @@ class CampaignController extends Controller
 
         if($type == 'three'){
             $CLICKBANK_CAPTAIN_KEY =  'API-2AN14EZXSZA5GPU0UNOLL64L9FYY8I6432ZC';
-
-        }
+        }*/
 
         // Your ClickBank API credentials
 
@@ -183,45 +202,51 @@ class CampaignController extends Controller
         return $decoded_response;
     }
 
-    // Fetching all orders
-    public function getClickBankAllOrders($type) {
+    /**================================== Fetching all orders ==================================*/
+    public function getClickBankAllOrders($api_id) {
         $endpoint = 'orders/list';
         $params = [
             'startDate' => date('Y-m-d',strtotime("-1 days")),
             'endDate' => date('Y-m-d')
         ];
-        $response = $this->clickbankApiRequest($endpoint, $params,$type );
+        $response = $this->clickbankApiRequest($endpoint, $params,$api_id );
         return response()->json([
             'response' => $response
         ]);
     }
 
 
-
-
-
-    // Fetching all accounts
-    public function getClickBankAllAccounts($type) {
+    /**=============================== Fetching all accounts ===============================*/
+    public function getClickBankAllAccounts($api_id) {
         $endpoint = 'quickstats/accounts';
-        $params = [
-            'startDate' => date('Y-m-d', strtotime("-30 days")),
-            'endDate' => date('Y-m-d')
-        ];
+        // $endpoint = 'quickstats/list';
 
         // Call the ClickBank API request method
-        $response = $this->clickbankApiRequest($endpoint, [], $type);
+        $response = $this->clickbankApiRequest($endpoint, [], $api_id);
 
         // Return the response in JSON format
         return response()->json([
             'response' => $response,
             'apicall' => true,
-            'type' => $type,
-            'params' => $params
+            'api_id' => $api_id
         ]);
     }
 
 
-    public function getUniqueAffiliates($type) {
+
+
+    /**================================== Fetching products by account ==================================*/
+    protected function get_clickbank_orders_by_account($api_id) {
+        $endpoint = 'orders2/list';
+        $params = [
+            'vendor' => '001connect'
+        ];
+        $response = $this->clickbankApiRequest($endpoint, $params, $api_id );
+        return [ 'response' => $response ];
+    }
+
+
+    /*public function getUniqueAffiliates($type) {
         $salesData = $this->getClickBankAllAccounts($type)->original['response'];
 
         $affiliates = [];
@@ -238,19 +263,22 @@ class CampaignController extends Controller
         return response()->json([
             'unique_affiliates' => $affiliates
         ]);
-    }
+    }*/
 
 
 
 
 
 
-    public function getActiveCampaingLists(){
+    /**================================== active campaign get lists ==================================*/
+    public function getActiveCampaingLists($id){
 
         // Replace with your actual API key and API URL
-        $apiKey = '6de79823680da63369c98a1bf0b53fcff748cd1cb92a0fc2b9aa0650ff20cc91b84ce4e9';
-        $apiUrl = 'https://druckermedia.activehosted.com/api/3/lists';
+        // $apiKey = '6de79823680da63369c98a1bf0b53fcff748cd1cb92a0fc2b9aa0650ff20cc91b84ce4e9';
+        // $apiUrl = 'https://druckermedia.activehosted.com/api/3/lists';
 
+        $apiKey = $this->get_api_data('activecampaign',$id)['key'];
+        $apiUrl = $this->get_api_data('activecampaign',$id)['url'];
 
         // Initialize cURL
         $ch = curl_init();
@@ -277,9 +305,35 @@ class CampaignController extends Controller
         curl_close($ch);
 
         return response()->json([
-            'data' => $data
+            'data' => $data,
+            'resp' => [$id,$apiKey,$apiUrl]
         ]);
 
+    }
+
+
+
+
+
+    public function campaign_start_get_info($camid){
+        $campaign = Campaign::select('id','details')->find($camid);
+        $details = unserialize($campaign->details);
+        if(!$campaign){
+            return response()->json([
+                'msg' => 'Campaign not found! try again!',
+                'resp' => false
+            ]);
+        }
+
+
+        $orders = $this->get_clickbank_orders_by_account(43);
+
+
+        return response()->json([
+            'msg' => 'Campaign found',
+            'resp' => $details,
+            'orders' => $orders
+        ]);
     }
 
 

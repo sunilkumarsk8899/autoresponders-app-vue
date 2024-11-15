@@ -23,11 +23,18 @@ Route::delete('/v1/delete-campaign/{id}', [CampaignController::class, 'delete_ca
 
 
 /** clickbank api */
-Route::get('/v1/clickbank/products/{type}/orders', [CampaignController::class,'getClickBankAllOrders'])->name('clickbank.get-orders'); /** get all order */
-Route::get('/v1/clickbank/get/{type}/accounts', [CampaignController::class,'getClickBankAllAccounts'])->name('clickbank.get_accounts'); /** get all affiliates */
+Route::get('/v1/clickbank/products/{type}/orders', [CampaignController::class,'getClickBankAllOrders'])->name('clickbank.get-orders'); /** get all order form curl clickbank*/
+Route::get('/v1/clickbank/get/{id}/accounts', [CampaignController::class,'getClickBankAllAccounts'])->name('clickbank.get_accounts'); /** get all accounts from curl clickbank*/
+Route::get('/v1/get-active-campaing/lists/{id}', [CampaignController::class,'getActiveCampaingLists'])->name('settings.get_activecampaign_lists'); /** get all active-campaign lists form curl */
+
 Route::get('/v1/get-accounts/{type}', [SettingController::class,'get_account'])->name('clickbank.get_account'); /** get all clickbank accounts */
 Route::get('/v1/active-campaign-accounts', [SettingController::class,'get_active_campaign_account'])->name('active_campaign.get_active_campaign_account'); /** get all active-campaign accounts */
-Route::get('/v1/get-active-campaing/lists', [CampaignController::class,'getActiveCampaingLists'])->name('settings.get_activecampaign_lists');
+
+
+Route::get('/v1/api/get/data/{name}/{id}', [CampaignController::class,'get_api_data'])->name('setting.get_apis');
+
+Route::get('/v1/start/{camid}/campaing', [CampaignController::class,'campaign_start_get_info'])->name('campaign.campaign_start_get_info');
+
 
 
 

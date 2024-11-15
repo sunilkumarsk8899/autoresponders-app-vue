@@ -156,14 +156,15 @@ const deleteHandle = async (id) => {
                                 <button class="btn btn-danger" @click="deleteHandle(item.id)" >Delete</button>
                             </td>
                             <td class="text-center" >
-                                <Link
+                                <!-- <Link
                                     :href="route('campaign.start', { camid : item.id })"
                                     :class="[
                                         'rounded-md px-3 py-2 text-white ring-1 ring-transparent transition btn btn-secondary'
                                     ]"
                                 >
                                     Start
-                                </Link>
+                                </Link> -->
+                                <button class="btn btn-success">Start</button>
                             </td>
                         </tr>
                     </tbody>
