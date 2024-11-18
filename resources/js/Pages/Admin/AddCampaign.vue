@@ -38,6 +38,7 @@ const clickBankApiID = ref('');
 /** get data by apis */
 const clickbankAllAccounts = ref('');
 const clickbankAllOrders = ref('');
+const clickbank_products = ref('');
 
 
 
@@ -97,10 +98,8 @@ onMounted(() => {
 
 /** add campaign form submit */
 const addCampaign = async () => {
-    const item = selectedClickbankProducts.value.map(order => order.item);
+    const item = selectedClickbankProducts.value.map(order => order['@sku']);
     AddCampaignFromData.value.selected_clickbank_products_name = item;
-    console.log(AddCampaignFromData.value);
-
     errors.value = {};
     try {
         const resp = await axios.post('/api/v1/store-campaign', AddCampaignFromData.value, {
@@ -172,7 +171,7 @@ const getClickBankAllAccounts = async () => {
     try {
         let apiID = clickBankApiID.value;
         const response = await axios.get(`/api/v1/clickbank/get/${apiID}/accounts`);
-        console.log(response.data);
+        // console.log('all accounts',response.data);
         clickbankAllAccounts.value = response.data.response.accountData;
     } catch (error) {
         console.log(error);
@@ -187,14 +186,34 @@ const getClickBankAllOrders = async () => {
     try {
         let apiID = clickBankApiID.value;
         const response = await axios.get(`/api/v1/clickbank/products/${apiID}/orders`);
-        clickbankAllOrders.value = response.data.response.orderData;
-        console.log('order ',response.data.response.orderData);
+        // clickbankAllOrders.value = response.data.response.orderData;
+        console.log('all order ',response.data);
 
     } catch (error) {
         console.log(error);
     }
 }
 /**============================== get clickbank all account details end ==============================*/
+
+
+
+
+/** get product by account */
+const getClickBankAllProductsByAccount = async () => {
+    try {
+        let apiID = clickBankApiID.value;
+        let account = AddCampaignFromData.value.clickbank_account_name;
+        // console.log('form data ',AddCampaignFromData.value);
+
+        const response = await axios.get(`/api/v1/clickbank/get/${apiID}/products/${account}`);
+        clickbank_products.value = response.data.response.products.product;
+        // console.log('all products by account ',response.data.response.products.product);
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 
 
@@ -217,7 +236,8 @@ const clickBankOptionHandler = (event) =>{ /** get clickbank list & show next ac
 const clickBankAccountOptionHandler = (event) => { /** clickbank account id get in dropdown */
     is_active_clickbank_product_dropdown.value = true;
     AddCampaignFromData.value.clickbank_account_name = event.target.value;
-    getClickBankAllOrders();
+    // getClickBankAllOrders();
+    getClickBankAllProductsByAccount();
 }
 
 /**============================== click bank get details end ==============================*/
@@ -318,14 +338,16 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
                             <label for="clickbank-products">ClickBank Products</label>
                             <Multiselect
                             v-model="selectedClickbankProducts"
-                            :options="clickbankAllOrders"
+                            :options="clickbank_products"
                             :multiple="true"
-                            track-by="item"
-                            label="item"
+                            track-by="@sku"
+                            label="@sku"
                             placeholder="Select ClickBank Products"
                             class="w-100"
                             />
                         </div>
+
+
 
                         <!--=========================================== click bank details end ===========================================-->
 

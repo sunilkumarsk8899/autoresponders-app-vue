@@ -202,17 +202,21 @@ class CampaignController extends Controller
         return $decoded_response;
     }
 
-    /**================================== Fetching all orders ==================================*/
-    public function getClickBankAllOrders($api_id) {
+    /**================================== Fetching orders by vendor & item  ==================================*/
+    public function getClickBankAllOrders($api_id,$vendor,$items) {
         $endpoint = 'orders/list';
-        $params = [
-            'startDate' => date('Y-m-d',strtotime("-1 days")),
-            'endDate' => date('Y-m-d')
-        ];
-        $response = $this->clickbankApiRequest($endpoint, $params,$api_id );
-        return response()->json([
-            'response' => $response
-        ]);
+        $allResponses = [];
+        foreach ($items as $key => $item) {
+            $params = [
+                'startDate' => date('Y-m-d', strtotime("-5 days")),
+                'endDate' => date('Y-m-d'),
+                'vendor' => $vendor,
+                'item' => $item
+            ];
+            $response = $this->clickbankApiRequest($endpoint, $params, $api_id);
+            $allResponses[$key] = $response; // Store response by item name/key
+        }
+        return $allResponses;
     }
 
 
@@ -233,13 +237,47 @@ class CampaignController extends Controller
     }
 
 
+    /** get all products by account */
+    public function get_click_bank_products($api_id,$site){
+        $endpoint = 'products/list';
+        $params = [
+            'site' => $site
+        ];
+        $response = $this->clickbankApiRequest($endpoint, $params,$api_id);
+        return response()->json([
+            'response' => $response,
+            'apicall' => true,
+            'api_id' => [$api_id, $params],
+        ]);
+    }
+
+
+
+
+
+    // public function test($api_id,$site){
+    //     $endpoint = 'products/faith01';
+    //     $params = [
+    //         // 'startDate' => date('Y-m-d',strtotime("-1 days")),
+    //         // 'endDate' => date('Y-m-d'),
+    //         'site' => $site
+    //     ];
+    //     $response = $this->clickbankApiRequest($endpoint, $params,$api_id);
+    //     return response()->json([
+    //         'response' => $response,
+    //         'apicall' => true,
+    //         'api_id' => [$api_id, $params]
+    //     ]);
+    // }
+
+
 
 
     /**================================== Fetching products by account ==================================*/
     protected function get_clickbank_orders_by_account($api_id) {
         $endpoint = 'orders2/list';
         $params = [
-            'vendor' => '001connect'
+            'vendor' => 'pray95'
         ];
         $response = $this->clickbankApiRequest($endpoint, $params, $api_id );
         return [ 'response' => $response ];
@@ -278,7 +316,7 @@ class CampaignController extends Controller
         // $apiUrl = 'https://druckermedia.activehosted.com/api/3/lists';
 
         $apiKey = $this->get_api_data('activecampaign',$id)['key'];
-        $apiUrl = $this->get_api_data('activecampaign',$id)['url'];
+        $apiUrl = $this->get_api_data('activecampaign',$id)['url'].'api/3/lists?limit=50';
 
         // Initialize cURL
         $ch = curl_init();
@@ -315,6 +353,7 @@ class CampaignController extends Controller
 
 
 
+
     public function campaign_start_get_info($camid){
         $campaign = Campaign::select('id','details')->find($camid);
         $details = unserialize($campaign->details);
@@ -335,6 +374,213 @@ class CampaignController extends Controller
             'orders' => $orders
         ]);
     }
+
+
+
+
+
+
+
+
+
+
+
+    /** get active campaing informaiton */
+    public function get_active_campaign_info(){
+        $campaign = Setting::where('name','activecampaign')->where('status',1)->first();
+        if(!$campaign){
+            return [
+                'msg' => 'Campaign not found!',
+                'resp' => false
+            ];
+        }
+        $info = unserialize($campaign->info);
+        return $info;
+    }
+
+
+
+
+    // Function to get contact by email
+    public function getContactByEmail($email,$api_url,$apiKey) {
+
+        // $api_url = 'https://druckermedia.activehosted.com';
+        // $apiKey = '6de79823680da63369c98a1bf0b53fcff748cd1cb92a0fc2b9aa0650ff20cc91b84ce4e9';
+
+
+
+        $endpoint = $api_url . "/api/3/contacts?email=".$email;
+
+        $curl = curl_init($endpoint);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Api-Token: ' . $apiKey,
+            'Content-Type: application/json'
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $data = json_decode($response, true);
+
+        if (!empty($data['contacts'])) {
+            return $data['contacts'][0]['id']; // Return the contact ID
+        }
+        return null; // Contact not found
+    }
+
+
+    // public Function to add a contact to a list
+    public function addEmailToList($contact_id, $list_id, $api_url, $api_key) {
+
+        // $api_url = 'https://druckermedia.activehosted.com';
+        // $api_key = '6de79823680da63369c98a1bf0b53fcff748cd1cb92a0fc2b9aa0650ff20cc91b84ce4e9';
+
+
+        $endpoint = $api_url . "/api/3/contactLists";
+
+
+
+        $data = [
+            'contactList' => [
+                'list' => $list_id,
+                'contact' => $contact_id,
+                'status' => 1  // 1 for "active" (subscribed)
+            ]
+        ];
+
+        $curl = curl_init($endpoint);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Api-Token: ' . $api_key,
+            'Content-Type: application/json'
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $data = json_decode($response, true);
+
+        return isset($data['contactList']); // Return true if added to the list
+    }
+
+
+
+    public function addContactToActiveCampaignList($listId, $email, $firstName = '', $lastName = '') {
+
+        $activeInfo = $this->get_active_campaign_info();
+        $apiUrl = $activeInfo['url'];
+        $apiKey = $activeInfo['key'];
+
+        // $apiUrl = 'https://druckermedia.activehosted.com';
+        // $apiKey = '6de79823680da63369c98a1bf0b53fcff748cd1cb92a0fc2b9aa0650ff20cc91b84ce4e9';
+
+        // Check contact exist
+        $contact_id = $this->getContactByEmail($email,$apiUrl,$apiKey);
+
+        if(!empty($contact_id)){
+
+            $this->addEmailToList($contact_id, $listId, $apiUrl, $apiKey);
+
+        }else{
+
+        // API endpoint to add a new contact
+        $endpoint = "/api/3/contacts";
+
+        // Contact data
+        $contactData = [
+            "contact" => [
+                "email" => $email,
+                "firstName" => $firstName,
+                "lastName" => $lastName
+            ]
+        ];
+
+
+
+
+
+        // Initialize cURL session
+        $ch = curl_init();
+
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_URL, $apiUrl . $endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($contactData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Api-Token: $apiKey",
+            "Content-Type: application/json",
+        ]);
+
+        // Execute cURL request and get response
+        $response = curl_exec($ch);
+
+        // Check for cURL errors
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+            curl_close($ch);
+            return false;
+        } else {
+            // Decode and get the contact ID from the response
+            $responseDecoded = json_decode($response, true);
+            $contactId = $responseDecoded['contact']['id'];
+
+            curl_close($ch);
+
+            // Now add the contact to the list
+            return $this->addContactToList($apiUrl, $apiKey, $listId, $contactId);
+        }
+
+    }
+
+    }
+
+    public function addContactToList($apiUrl, $apiKey, $listId, $contactId) {
+        // API endpoint to add contact to list
+        $endpoint = "/api/3/contactLists";
+
+        // Contact list data
+        $contactListData = [
+            "contactList" => [
+                "list" => $listId,
+                "contact" => $contactId,
+                "status" => 1 // 1 for "active"
+            ]
+        ];
+
+        // Initialize cURL session
+        $ch = curl_init();
+
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_URL, $apiUrl . $endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($contactListData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Api-Token: $apiKey",
+            "Content-Type: application/json",
+        ]);
+
+        // Execute cURL request and get response
+        $response = curl_exec($ch);
+
+        // Check for cURL errors
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+            curl_close($ch);
+            return false;
+        } else {
+            // Decode and return the response
+            $responseDecoded = json_decode($response, true);
+            curl_close($ch);
+            return $responseDecoded;
+        }
+    }
+
+
 
 
 
