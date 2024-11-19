@@ -37,7 +37,7 @@ Route::get('/v1/api/get/data/{name}/{id}', [CampaignController::class,'get_api_d
 Route::get('/v1/start/{camid}/campaing', [CampaignController::class,'campaign_start_get_info'])->name('campaign.campaign_start_get_info');
 
 
-Route::get('/test', [CampaignController::class,'get_active_campaign_info']);
+Route::put('/v1/start/{id}/campaign', [CampaignController::class,'is_start_campaign'])->name('campaign.is_start_campaign'); /** campaign start  */
 
 
 

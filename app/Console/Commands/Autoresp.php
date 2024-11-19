@@ -46,7 +46,7 @@ class Autoresp extends Command
             $api_id = $details['clickbank_id'];
             $vendor_name = $details['clickbank_account_name'];
             $items = explode(",",$details['selected_clickbank_products_name']);
-            $allResponses[$key] = [$CampaignController->getClickBankAllOrders($api_id,$vendor_name,$items),$details['active_campaign_list_id']];
+            $allResponses[$key] = [$CampaignController->getClickBankAllOrders($api_id,$vendor_name,$items),$details['active_campaign_list_id'],$vendor_name,$items];
         }
 
 
@@ -86,6 +86,8 @@ class Autoresp extends Command
 
         foreach ($allResponses as $response) {
             $listId = $response[1]; // Extract list ID from response
+            $vendor_name = $response[2];
+            $items = $response[3];
 
             foreach ($response[0] as $itemName => $itemData) {
                 // Check if orderData exists and is an array
@@ -105,11 +107,13 @@ class Autoresp extends Command
                                     'email' => $email,
                                     'firstName' => $firstName,
                                     'lastName' => $lastName,
-                                    'list_id' => $listId
+                                    'list_id' => $listId,
+                                    'vendor_name' => $vendor_name,
+                                    'items' => $items
                                 ];
 
                                 // Call the function to add contact
-                                $active_campaign_resp[] = $CampaignController->addContactToActiveCampaignList($listId,$email,$firstName,$lastName);
+                                // $active_campaign_resp[] = $CampaignController->addContactToActiveCampaignList($listId,$email,$firstName,$lastName);
 
                             }
                         }
@@ -120,7 +124,7 @@ class Autoresp extends Command
 
 
 
-        Log::info(print_r($active_campaign_resp,true));
+        // Log::info(print_r($active_campaign_resp,true));
         Log::info(print_r($final_data,true));
 
 

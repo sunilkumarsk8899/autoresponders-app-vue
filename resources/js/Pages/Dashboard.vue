@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import ModelBox from '@/Components/ModelBox.vue';
 
 
@@ -26,6 +26,7 @@ const deleteConfirmation = async () =>{
 
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css'; // You can change the theme as needed
+import axios from 'axios';
 const toast = useToast();
 const showToast = (type='success',msg) => {
     // Show a toast notification
@@ -47,6 +48,9 @@ const campaigns = ref([]);
 const currentUserData = usePage().props.auth.user;
 const userid = currentUserData.id;
 
+const reloadCampaigns = ref(false); // Reactive property to trigger reload
+
+
 
 /** edit */
 
@@ -58,6 +62,11 @@ const editHandle = (id) =>{
 /** onmounted */
 onMounted(() => {
     get_campaigns();
+});
+
+watch([reloadCampaigns], async () => {
+    await get_campaigns();
+    console.log('refresh');
 });
 
 /** get campaigns */
@@ -82,6 +91,13 @@ const deleteHandle = async (id) => {
         showToast('error',error.message);
     }
 };
+
+
+const campaing_start_handler = async (id) => {
+    const resp = await axios.put(`/api/v1/start/${id}/campaign`);
+    reloadCampaigns.value = !reloadCampaigns.value; /** this is only for reload get data function */
+    showToast('success',`${resp.data.campaign.name} campaign ${resp.data.is_start ? 'Start' : 'Stop'} successfully`);
+}
 
 </script>
 
@@ -164,7 +180,12 @@ const deleteHandle = async (id) => {
                                 >
                                     Start
                                 </Link> -->
-                                <button class="btn btn-success">Start</button>
+                                <button
+                                    :class="`btn btn-${item.start == 1 ? 'info text-white' : 'success'}`"
+                                    @click="campaing_start_handler(item.id)">
+                                    {{ item.start == 1 ? 'Stop' : 'Start' }}
+                                </button>
+
                             </td>
                         </tr>
                     </tbody>

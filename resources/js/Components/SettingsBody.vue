@@ -350,12 +350,12 @@ const getActiveCampaignData = async () => {
                                     placeholder="Enter activecampaign Captain Key">
 
 
-                                <label :for="'activecampaign-captain-key-' + index">API LIST ID {{ index + 1 }}</label>
+                                <!-- <label :for="'activecampaign-captain-key-' + index">API LIST ID {{ index + 1 }}</label>
                                 <input type="text" class="form-control mb-3"
                                     v-model="ActiveCampaignFormData.activecampaign_list_id[index]"
                                     :name="'activecampaign_captain_key[' + index + ']'"
                                     :id="'activecampaign-captain-key-' + index"
-                                    placeholder="Enter activecampaign Captain Key">
+                                    placeholder="Enter activecampaign Captain Key"> -->
 
                                 <button v-if="ActiveCampaignFormData.activecampaign_apiurl.length > 1"
                                         type="button"

@@ -157,7 +157,9 @@ const getActiveCampaignAccounts = async () => {
 const getActiveCampaignLists = async (id) => {
     try {
         const resp = await axios.get(`/api/v1/get-active-campaing/lists/${id}`);
-        activeCampaignLists.value = resp.data.data.lists;
+        console.log(resp);
+
+        // activeCampaignLists.value = resp.data.data.lists;
     } catch (error) {
         console.log(error);
     }
@@ -252,6 +254,8 @@ const activeCampaignHandler = (event) => { /** get active campaign id and show n
     const activeCampaignId = event.target.value;
     AddCampaignFromData.value.active_campaign_id = event.target.value;
     getActiveCampaignLists(activeCampaignId);
+    console.log('active campaing list id',activeCampaignId);
+
 }
 
 const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
