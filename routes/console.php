@@ -14,6 +14,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command(Autoresp::class)->everyMinute();
 
-Schedule::call(function(){
-    Log::info('Schedule called');
-})->everySecond();
+// Schedule::call(function(){
+//     Log::info('Schedule called');
+// })->everySecond();
