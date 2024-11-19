@@ -98,7 +98,7 @@ const editFormData = ref({
     'name' : '',
     'desc' : '',
     'user_id' : UserID,
-    'clickbank_id' : '',
+    'clickbank_id' : 42,
     'clickbank_account_name' : '',
     'selected_clickbank_products_name' : [],
     'active_campaign_id' : '',
@@ -206,7 +206,7 @@ const getClickBankAllAccounts = async () => {
         let apiID = clickBankApiID.value;
         const response = await axios.get(`/api/v1/clickbank/get/${apiID}/accounts`);
         console.log('all accounts',response.data);
-        // clickbankAllAccounts.value = response.data.response.accountData;
+        clickbankAllAccounts.value = response.data.response.accountData;
     } catch (error) {
         console.log(error);
     }
