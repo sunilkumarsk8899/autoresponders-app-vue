@@ -39,9 +39,11 @@ function handleImageError() {
         >
             <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
                 <header
-                    class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
+                    class="grid  items-center gap-2 py-10 "
+
                 >
-                    <div class="flex lg:col-start-2 lg:justify-center">
+                <!-- grid-cols-2 lg:grid-cols-3 -->
+                    <!-- <div class="flex lg:col-start-2 lg:justify-center">
                         <svg
                             class="h-12 w-auto text-white lg:h-16 lg:text-[#FF2D20]"
                             viewBox="0 0 62 65"
@@ -53,8 +55,8 @@ function handleImageError() {
                                 fill="currentColor"
                             />
                         </svg>
-                    </div>
-                    <nav v-if="canLogin" class="-mx-3 flex flex-1 justify-end">
+                    </div> -->
+                    <nav v-if="canLogin" class="-mx-3 flex flex-1 justify-center">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
@@ -83,7 +85,7 @@ function handleImageError() {
                 </header>
 
                 <main class="mt-6">
-                    <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
+                    <!-- <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
                         <a
                             href="https://laravel.com/docs"
                             id="docs-card"
@@ -372,7 +374,7 @@ function handleImageError() {
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </main>
 
                 <footer

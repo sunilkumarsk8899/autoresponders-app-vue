@@ -181,7 +181,7 @@ const campaing_start_handler = async (id) => {
                                     Start
                                 </Link> -->
                                 <button
-                                    :class="`btn btn-${item.start == 1 ? 'info text-white' : 'success'}`"
+                                    :class="`btn btn-${item.start == 1 ? 'secondary text-white' : 'success'} font-weight-bold`"
                                     @click="campaing_start_handler(item.id)">
                                     {{ item.start == 1 ? 'Stop' : 'Start' }}
                                 </button>
