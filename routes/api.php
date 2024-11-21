@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ Route::get('/v1/start/{camid}/campaing', [CampaignController::class,'campaign_st
 
 Route::put('/v1/start/{id}/campaign', [CampaignController::class,'is_start_campaign'])->name('campaign.is_start_campaign'); /** campaign start  */
 
+Route::post('/v1/admin/register', [AdminController::class, 'register_store'])->name('admin.admin_register');
 
 
 

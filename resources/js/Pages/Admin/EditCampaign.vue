@@ -76,11 +76,16 @@ const clickbank_products = ref('');
 
 
 
+
 onMounted(() => {
-    console.log('mouted');
+    console.log('run mouted');
     getSingleCampaign();
     getClickbankAccounts();
     getActiveCampaignAccounts();
+
+    console.log('id',editFormData.value.clickbank_id);
+
+
 });
 
 
@@ -355,6 +360,26 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
                                 </option>
                             </select>
                         </div>
+
+                        <div class="form-group mb-3">
+                            <label for="desc">ClickBank API Accounts</label>
+                            <select
+                                name="clickbank_account"
+                                id="clickbank_account"
+                                class="w-100 rounded"
+                                style="border-color: #dee2e6;"
+                                @change="clickBankOptionHandler"
+                                v-model="editFormData.clickbank_id">
+                                <option value="">Select ClickBank API Account</option>
+                                <option
+                                    v-for="(clickbankitem, index) in clickbankAccounts"
+                                    :key="index"
+                                    :value="clickbankitem.id">
+                                    {{ clickbankitem.name }}
+                                </option>
+                            </select>
+                        </div>
+
 
                         <!-- users accounts -->
                         <div class="form-group mb-3" v-if="is_active_clickbank_account_dropdown" >
