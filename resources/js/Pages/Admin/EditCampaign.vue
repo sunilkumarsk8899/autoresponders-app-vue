@@ -309,6 +309,11 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
 
 
 
+
+
+
+
+
 <template>
     <Head :title=props.settings.title />
     <AuthenticatedLayout>
