@@ -10,12 +10,15 @@ use Inertia\Inertia;
 class AdminController extends Controller
 {
     public function showRegistrationForm(){
+        $users = User::get();
+
         $settings = [
             'title' => 'Register'
         ];
 
         return Inertia::render('Admin/AdminRegister', [
-            'settings' => $settings
+            'settings' => $settings,
+            'users' => $users
         ]);
     }
 
