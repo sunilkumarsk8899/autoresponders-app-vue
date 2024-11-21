@@ -33,6 +33,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user(); // Get the authenticated user
+
+        // Check if the user is not an admin
+        if ($user->role !== '1') {
+            Auth::logout(); // Log out the non-admin user
+            return redirect()->route('no-access')->with('error', 'Unauthorized access. You have been logged out.');
+
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

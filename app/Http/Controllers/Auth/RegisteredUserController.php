@@ -44,6 +44,12 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        if ($user->role !== '1') {
+            Auth::logout(); // Log out the non-admin user
+            return redirect()->route('no-access')->with('error', 'Unauthorized access. You have been logged out.');
+
+        }
+
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));

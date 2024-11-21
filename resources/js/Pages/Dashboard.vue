@@ -96,6 +96,8 @@ const deleteHandle = async (id) => {
 const campaing_start_handler = async (id) => {
     const resp = await axios.put(`/api/v1/start/${id}/campaign`);
     reloadCampaigns.value = !reloadCampaigns.value; /** this is only for reload get data function */
+    console.log(resp.data);
+
     showToast('success',`${resp.data.campaign.name} campaign ${resp.data.is_start ? 'Start' : 'Stop'} successfully`);
 }
 
@@ -158,7 +160,6 @@ const campaing_start_handler = async (id) => {
                             <td>{{ item.name }}</td>
                             <td>{{ item.description }}</td>
                             <td class="text-center" >
-                                <!-- <button class="btn btn-primary" @click="editHandle(item.id)"> EDIT </button> -->
                                 <Link
                                     :href="route('campaign.edit', { id : item.id })"
                                     :class="[
@@ -180,11 +181,21 @@ const campaing_start_handler = async (id) => {
                                 >
                                     Start
                                 </Link> -->
-                                <button
+                                <!-- <button
                                     :class="`btn btn-${item.start == 1 ? 'secondary text-white' : 'success'} font-weight-bold`"
                                     @click="campaing_start_handler(item.id)">
                                     {{ item.start == 1 ? 'Stop' : 'Start' }}
-                                </button>
+                                </button> -->
+
+                                <label class="custom-switch">
+                                    <input
+                                        type="checkbox"
+                                        :checked="item.start == '1'"
+                                        @click="campaing_start_handler(item.id)"
+                                    />
+                                    <span class="slider round"></span>
+                                </label>
+
 
                             </td>
                         </tr>

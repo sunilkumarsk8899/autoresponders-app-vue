@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
@@ -30,6 +31,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/campaign/add',[CampaignController::class,'add_campaign'])->name('campaign.add');
     Route::get('/campaign/{id}/edit',[CampaignController::class,'edit_campaign'])->name('campaign.edit');
     Route::get('/campaign/{camid}/start', [CampaignController::class,'campaign_start'])->name('campaign.start');
+
+    Route::get('/admin/register', [AdminController::class, 'showRegistrationForm'])->name('admin.index');
 });
+
+Route::get('/no-access', function(){
+    return Inertia::render('NotAllowed');
+})->name('no-access');
 
 require __DIR__.'/auth.php';

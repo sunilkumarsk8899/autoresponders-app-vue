@@ -209,7 +209,7 @@ const getClickBankAllProductsByAccount = async () => {
 
         const response = await axios.get(`/api/v1/clickbank/get/${apiID}/products/${account}`);
         clickbank_products.value = response.data.response.products.product;
-        // console.log('all products by account ',response.data.response.products.product);
+        console.log('all products by account ',response.data.response.products.product);
 
     } catch (error) {
         console.log(error);
@@ -254,7 +254,7 @@ const activeCampaignHandler = (event) => { /** get active campaign id and show n
     const activeCampaignId = event.target.value;
     AddCampaignFromData.value.active_campaign_id = event.target.value;
     getActiveCampaignLists(activeCampaignId);
-    console.log('active campaing list id',activeCampaignId);
+    console.log('active campaing list id sdfgsdf',activeCampaignId);
 
 }
 
