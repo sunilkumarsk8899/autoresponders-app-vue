@@ -83,7 +83,8 @@ class CampaignController extends Controller
     {
         $campaign = Campaign::find($id);
         return response()->json([
-            'campaign' => $campaign
+            'campaign' => $campaign,
+            'details' => unserialize($campaign->details)
         ]);
     }
 
@@ -93,14 +94,19 @@ class CampaignController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'desc' => 'required'
+            'description' => 'required'
         ]);
+
+        // return response()->json([
+        //     'message' => 'Campaign updated successfully',
+        //     'resp' => $request->all()
+        // ]);
 
 
         $serliData = [
             'clickbank_id' => $request->input('clickbank_id'),
             'clickbank_account_name' => $request->input('clickbank_account_name'),
-            'selected_clickbank_products_name' => implode(",", $request->input('selected_clickbank_products_name')),
+            'selected_clickbank_products_name' => $request->input('selected_clickbank_products_name'),
             'active_campaign_id' => $request->input('active_campaign_id'),
             'active_campaign_list_id' => $request->input('active_campaign_list_id')
         ];
@@ -109,7 +115,7 @@ class CampaignController extends Controller
         $updateData = [
             'user_id' => $request->input('user_id'),
             'name' => $request->name,
-            'description' => $request->desc,
+            'description' => $request->description,
             'details' => serialize($serliData)
         ];
 
