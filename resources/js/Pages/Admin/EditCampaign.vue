@@ -82,10 +82,6 @@ onMounted(() => {
     getSingleCampaign();
     getClickbankAccounts();
     getActiveCampaignAccounts();
-
-    console.log('id',editFormData.value.clickbank_id);
-
-
 });
 
 
@@ -101,14 +97,16 @@ const errors = ref({
 
 const editFormData = ref({
     'name' : '',
-    'desc' : '',
+    'description' : '',
     'user_id' : UserID,
-    'clickbank_id' : 42,
+    'clickbank_id' : '',
     'clickbank_account_name' : '',
     'selected_clickbank_products_name' : [],
     'active_campaign_id' : '',
     'active_campaign_list_id' : ''
 });
+
+const selectedClickbankProducts = ref([]);
 
 
 /** get single cmapaign */
@@ -116,7 +114,41 @@ const getSingleCampaign = async () =>{
     try {
         const response = await axios.get(`/api/v1/get-campaigns/${campid}/single`);
         editFormData.value = response.data.campaign;
-        console.log(response.data.campaign);
+        console.log('get edit campaing data ',response.data.campaign,response.data.details);
+        editFormData.value.clickbank_id = response.data.details.clickbank_id;
+        editFormData.value.clickbank_account_name = response.data.details.clickbank_account_name;
+        editFormData.value.selected_clickbank_products_name = response.data.details.selected_clickbank_products_name;
+        editFormData.value.active_campaign_id = response.data.details.active_campaign_id;
+        editFormData.value.active_campaign_list_id = response.data.details.active_campaign_list_id;
+
+
+
+        /** get clickbank account */
+        clickBankApiID.value = response.data.details.clickbank_id; /** get clickbank id */
+        is_active_clickbank_account_dropdown.value = true; /** show account dropdown */
+        getClickBankAllAccounts(); /** get all clickbank accounts */
+
+        is_active_clickbank_product_dropdown.value = true;
+        getClickBankAllProductsByAccount(); /** get all products by account */
+
+
+        /** show active campaing list who user selected */
+        is_active_campaign_list_dropdown.value = true;
+        getActiveCampaignLists(editFormData.value.active_campaign_id);
+
+
+        /** show clickbank products who user selected */
+        const test = response.data.details.selected_clickbank_products_name.split(",");
+        selectedClickbankProducts.value = test.map((sku) => {
+            console.log(sku);
+            return {
+                '@sku': sku,
+            };
+
+        });
+
+
+
     } catch(errors) {
         console.log(errors);
     }
@@ -125,6 +157,8 @@ const getSingleCampaign = async () =>{
 
 /** update campaign get data */
 const editCampaign = async () => {
+    const item = selectedClickbankProducts.value.map(order => order['@sku']);
+    editFormData.value.selected_clickbank_products_name = item;
     errors.value = {}; // Reset errors before the request
     try {
         // Create a FormData instance and append form data
@@ -132,6 +166,11 @@ const editCampaign = async () => {
         formData.append('name', editFormData.value.name);
         formData.append('description', editFormData.value.description);
         formData.append('user_id', editFormData.value.user_id);
+        formData.append('clickbank_id', editFormData.value.clickbank_id);
+        formData.append('clickbank_account_name', editFormData.value.clickbank_account_name);
+        formData.append('selected_clickbank_products_name', editFormData.value.selected_clickbank_products_name);
+        formData.append('active_campaign_id', editFormData.value.active_campaign_id);
+        formData.append('active_campaign_list_id', editFormData.value.active_campaign_list_id);
         formData.append('id', campid); // Make sure `campid` is defined and holds the correct ID
 
         // Make an API request to update the campaign
@@ -207,10 +246,10 @@ const getActiveCampaignLists = async (id) => {
 
 /**============================== get clickbank all account details start ==============================*/
 const getClickBankAllAccounts = async () => {
+    let apiID = clickBankApiID.value;
     try {
-        let apiID = clickBankApiID.value;
         const response = await axios.get(`/api/v1/clickbank/get/${apiID}/accounts`);
-        console.log('all accounts',response.data);
+        // console.log('all accounts',response.data);
         clickbankAllAccounts.value = response.data.response.accountData;
     } catch (error) {
         console.log(error);
@@ -239,11 +278,12 @@ const getClickBankAllOrders = async () => {
 
 /** get product by account */
 const getClickBankAllProductsByAccount = async () => {
-    try {
-        let apiID = clickBankApiID.value;
+    let apiID = clickBankApiID.value;
         let account = editFormData.value.clickbank_account_name;
         // console.log('form data ',editFormData.value);
 
+        // console.log('get clickbank product',apiID,account);
+    try {
         const response = await axios.get(`/api/v1/clickbank/get/${apiID}/products/${account}`);
         clickbank_products.value = response.data.response.products.product;
         // console.log('all products by account ',response.data.response.products.product);
@@ -276,6 +316,7 @@ const clickBankAccountOptionHandler = (event) => { /** clickbank account id get 
     is_active_clickbank_product_dropdown.value = true;
     editFormData.value.clickbank_account_name = event.target.value;
     // getClickBankAllOrders();
+    selectedClickbankProducts.value = [];
     getClickBankAllProductsByAccount();
 }
 
@@ -291,7 +332,7 @@ const activeCampaignHandler = (event) => { /** get active campaign id and show n
     const activeCampaignId = event.target.value;
     editFormData.value.active_campaign_id = event.target.value;
     getActiveCampaignLists(activeCampaignId);
-    console.log('active campaing list id',activeCampaignId);
+    // console.log('active campaing list id',activeCampaignId);
 
 }
 
@@ -356,15 +397,6 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
 
                         <!--=========================================== click bank details start ===========================================-->
                         <!-- clickbank api accounts -->
-                        <div class="form-group mb-3" >
-                            <label for="desc">ClickBank API Accounts</label>
-                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="clickBankOptionHandler" >
-                                <option value="">Select ClickBank API Account</option>
-                                <option v-for="(clickbankitem,index) in clickbankAccounts" :key="index" :value="clickbankitem.id">
-                                    {{ clickbankitem.name }}
-                                </option>
-                            </select>
-                        </div>
 
                         <div class="form-group mb-3">
                             <label for="desc">ClickBank API Accounts</label>
@@ -389,9 +421,19 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
                         <!-- users accounts -->
                         <div class="form-group mb-3" v-if="is_active_clickbank_account_dropdown" >
                             <label for="desc">ClickBank User Accounts</label>
-                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="clickBankAccountOptionHandler" >
+                            <select
+                                name=""
+                                id=""
+                                class="w-100 rounded"
+                                style="border-color: #dee2e6;"
+                                @change="clickBankAccountOptionHandler"
+                                v-model="editFormData.clickbank_account_name"
+                            >
                                 <option value="">Select ClickBank User Account</option>
-                                <option v-for="(clickbankAccountItem,index) in clickbankAllAccounts" :key="index" :value="clickbankAccountItem.nickName">
+                                <option
+                                    v-for="(clickbankAccountItem,index) in clickbankAllAccounts"
+                                    :key="index"
+                                    :value="clickbankAccountItem.nickName">
                                     {{ clickbankAccountItem.nickName }}
                                 </option>
                             </select>
@@ -422,7 +464,7 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
                         <!-- api accounts -->
                         <div class="form-group mb-3">
                             <label for="desc">Active API Campaign</label>
-                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignHandler" >
+                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignHandler" v-model="editFormData.active_campaign_id" >
                                 <option value="">Select ActiveCampaign Account</option>
                                 <option v-for="(item,index) in activeCampaignAccounts" :key="item.id" :value="item.id" >
                                     {{ item.name }}
@@ -433,7 +475,7 @@ const activeCampaignListHandler = (event) =>{ /** get activecampaign list id */
                         <!-- selected api account lists -->
                         <div class="form-group mb-3" v-if="is_active_campaign_list_dropdown" >
                             <label for="desc">Active Campaign Lists</label>
-                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignListHandler" >
+                            <select name="" id="" class="w-100 rounded" style="border-color: #dee2e6;" @change="activeCampaignListHandler" v-model="editFormData.active_campaign_list_id" >
                                 <option value="">Select ActiveCampaign Account</option>
                                 <option v-for="(item,index) in activeCampaignLists" :key="item.id" :value="item.id" >
                                     {{ item.name }}

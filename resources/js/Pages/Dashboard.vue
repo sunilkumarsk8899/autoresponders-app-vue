@@ -98,7 +98,7 @@ const campaing_start_handler = async (id) => {
     reloadCampaigns.value = !reloadCampaigns.value; /** this is only for reload get data function */
     console.log(resp.data);
 
-    showToast('success',`${resp.data.campaign.name} campaign ${resp.data.is_start ? 'Start' : 'Stop'} successfully`);
+    showToast('success',`${resp.data.campaign.name} campaign ${resp.data.is_start ? 'Stop' : 'Start'} successfully`);
 }
 
 </script>

@@ -172,22 +172,25 @@ const deleteConfirmation = async () =>{
 
 // remove fields
 const removeFieldSet = async (index, clickbank_id) => {
+    if(typeof index != 'undefined' && typeof clickbank_id == 'undefined'){
         ClickBankFormData.value.clickbank_apiurl.splice(index, 1);
         ClickBankFormData.value.clickbank_captain_key.splice(index, 1);
-    try {
-        if (await deleteConfirmation()) {
-            const response = await axios.post('/api/v1/delete-setting', { id: clickbank_id });
-            console.log('Data deleted:', response.data);
-            clickbank_errors.value = {};
-            ClickBankFormData.value.clickbank_apiurl.splice(index, 1);
-            ClickBankFormData.value.clickbank_captain_key.splice(index, 1);
-            ClickBankFormData.value.clickbank_id.splice(index, 1);
-            showToast('success', 'Delete ClickBank Setting successfully');
+    }else if(typeof index != 'undefined' && typeof clickbank_id != 'undefined'){
+        try {
+            if (await deleteConfirmation()) {
+                const response = await axios.post('/api/v1/delete-setting', { id: clickbank_id });
+                console.log('Data deleted:', response.data);
+                clickbank_errors.value = {};
+                ClickBankFormData.value.clickbank_apiurl.splice(index, 1);
+                ClickBankFormData.value.clickbank_captain_key.splice(index, 1);
+                ClickBankFormData.value.clickbank_id.splice(index, 1);
+                showToast('success', 'Delete ClickBank Setting successfully');
+            }
+        } catch (error) {
+            console.error('Error deleting data:', error.response);
+            // clickbank_errors.value = error.response.data.errors;
+            showToast('error', "Something went wrong!");
         }
-    } catch (error) {
-        console.error('Error deleting data:', error.response);
-        // clickbank_errors.value = error.response.data.errors;
-        showToast('error', "Something went wrong!");
     }
 };
 
