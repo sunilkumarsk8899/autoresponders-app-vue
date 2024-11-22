@@ -40,4 +40,47 @@ class AdminController extends Controller
             'data' => $request->all()
         ]);
     }
+
+    /** search user */
+    public function user_search(Request $request){
+        $query = $request->query('query');
+        $users = User::where('name', 'like', '%' . $query . '%')
+                ->orWhere('email', 'like', '%' . $query . '%')
+                ->get();
+        return response()->json([
+            'users' => $users
+        ]);
+    }
+
+    /** delete user */
+    public function delete_user($id) {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User  not found'
+            ], 404); // Return a 404 Not Found status code
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User  deleted successfully'
+        ],200);
+    }
+
+
+    public function editUser($id){
+        $user = User::find($id);
+
+        $settings = [
+            'title' => 'Register'
+        ];
+
+        return Inertia::render('Admin/EditUser', [
+            'settings' => $settings,
+            'user' => $user
+        ]);
+    }
+
 }

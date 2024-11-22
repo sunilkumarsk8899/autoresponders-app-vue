@@ -70,7 +70,7 @@ const form = ref({
 
 
 /** user register */
-const register_form = async (event) => {
+const edit_form = async (event) => {
     event.preventDefault();
     errors.value = {};
     try {
@@ -97,24 +97,6 @@ const register_form = async (event) => {
     }
 };
 
-
-
-/** user search */
-const search_user = async (event) => {
-    const query = event.target.value;
-    if(query.length > 0){
-        try {
-            const resp = await axios.get(`/api/v1/search/user?query=${query}`);
-            console.log(resp.data.users);
-            users.value = resp.data.users;
-        } catch (error) {
-            console.log(error);
-        }
-    } else {
-        users.value = props.users
-    }
-}
-
 /** user delete */
 const delete_user = async (id) => {
     const userToDelete = props.users.find((user) => user.id === id);
@@ -132,8 +114,8 @@ const delete_user = async (id) => {
 }
 
 /** edit user redirect to edit user page */
-const edit_user = (id) => {
-    router.visit(`/admin/user/${id}/edit`);
+const prev_page = (id) => {
+    router.visit(`/admin/register`);
 }
 
 
@@ -215,48 +197,7 @@ const edit_user = (id) => {
                     </form>
                 </div>
 
-                <div class="col-12 mt-5">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr colspan="7">
-                                <th class="colspan-6" colspan="7">
-                                    <input type="text" class="w-100" placeholder="Search user enter name, email" @keyup="search_user" />
-                                </th>
-                            </tr>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Email</th>
-                                <th scope="col" colspan="2" class="text-center">
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(user, index) in users" :key="index">
-                                <th scope="row">{{ index + 1 }}</th>
-                                <td>{{ user.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td class="text-center">
-                                    <button
-                                        class="btn btn-sm btn-primary"
-                                        @click="edit_user(user.id)"
-                                    >
-                                        Edit
-                                    </button>
-                                </td>
-                                <td class="text-center">
-                                    <button
-                                        class="btn btn-sm btn-danger"
-                                        @click="delete_user(user.id)"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+
             </div>
         </div>
     </AuthenticatedLayout>

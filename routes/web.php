@@ -33,6 +33,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/campaign/{camid}/start', [CampaignController::class,'campaign_start'])->name('campaign.start');
 
     Route::get('/admin/register', [AdminController::class, 'showRegistrationForm'])->name('admin.index');
+
+    Route::get('/admin/user/{id}/edit', [AdminController::class, 'editUser'])->name('admin.edit');
 });
 
 Route::get('/no-access', function(){

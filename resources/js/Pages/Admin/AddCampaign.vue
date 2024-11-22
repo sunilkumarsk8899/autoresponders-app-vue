@@ -212,6 +212,7 @@ const getClickBankAllProductsByAccount = async () => {
         console.log('all products by account ',response.data.response.products.product);
 
     } catch (error) {
+        clickbank_products.value = '';
         console.log(error);
     }
 }

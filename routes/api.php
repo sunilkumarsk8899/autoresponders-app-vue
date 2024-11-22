@@ -44,3 +44,7 @@ Route::post('/v1/admin/register', [AdminController::class, 'register_store'])->n
 
 
 
+Route::get('/v1/search/user', [AdminController::class,'user_search'])->name('admin.user_search');
+Route::delete('/v1/admin/user/{id}', [AdminController::class,'delete_user'])->name('admin.delete_user');
+
+
